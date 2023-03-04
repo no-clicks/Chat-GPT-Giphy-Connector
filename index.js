@@ -8,7 +8,7 @@ const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
 // Create a rate limiter middleware function that limits each IP address to 100 requests every 15 minutes
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 
 // Apply the rate limiter middleware function to all routes
@@ -24,13 +24,15 @@ app.use((req, res, next) => {
 app.get("/search", limiter, async (req, res) => {
   // Extract the search term from the request query parameters
   let searchTerm = req.query.search_term;
-  
+
   // Remove the .gif extension from the search term, if present
-  searchTerm = searchTerm.replace(/\.gif$/i, '');
+  searchTerm = searchTerm.replace(/\.gif$/i, "");
 
   // Replace spaces and commas with "+" characters, and remove any other characters that aren't letters, numbers, "+", or "-"
-  searchTerm = searchTerm.replace(/[, ]+/g, "+").replace(/[^a-zA-Z0-9+\-]/g, "");
-  
+  searchTerm = searchTerm
+    .replace(/[, ]+/g, "+")
+    .replace(/[^a-zA-Z0-9+\-]/g, "");
+
   // Log the search term to the console
   console.log(`Search term: ${searchTerm}`);
 
