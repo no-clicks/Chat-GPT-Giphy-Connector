@@ -1,0 +1,26 @@
+{
+  "name": "scythe-spot-carpenter",
+  "version": "0.0.1",
+  "description": "Your app description goes here",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.1"
+  },
+  "engines": {
+    "node": "14.x"
+  },
+  "keywords": [
+    "keyword1",
+    "keyword2"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/no-clicks/Chat-GPT-Giphy-Connector.git"
+  },
+  "author": "no-clicks",
+  "license": "MIT"
+}
