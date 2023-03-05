@@ -107,6 +107,20 @@ app.get("/search", limiter, async (req, res) => {
   }
 });
 
+app.get("/requests", (req, res) => {
+  const filePath = `requests.log`;
+
+  // Read the contents of the requests.log file and return it in the response
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      res.status(200).send(data);
+    }
+  });
+});
+
 // Redirect to GitHub on root route
 app.get("/", (req, res) => {
   res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
