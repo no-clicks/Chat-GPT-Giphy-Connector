@@ -38,9 +38,7 @@ A new round starts when I say !reset If I reset, you start with 3 tokens again.
 How it Works
 ------------
 
-The API wrapper exposes a `/search` endpoint that takes a `search_term` query parameter and returns a GIF that matches the search term. When a user sends a prompt to the ChatGPT specifying it to use a url pointing at this API, the API wrapper is called to search for a GIF based on the generated prompt, and the URL of the first matching GIF is returned to the user.
-
-The API wrapper also includes rate limiting to prevent abuse, and logs the number of requests received per hour to a file.
+This process involves using inline image linking to display images from external sources. To retrieve a specific image, a wrapper API is used to listen for unique API calls that include search terms as parameters in the URL. The wrapper API then makes an API call to Giphy API, parses the response to extract the appropriate image, and serves the image result back to the inline image using dynamic image serving. This process enables the display of specific images based on user requests, and can be used in various web applications that require image display capabilities.
 
 API Documentation
 -----------------
@@ -63,14 +61,6 @@ If the search is unsuccessful, the endpoint returns a response with a `400` stat
 
 `400 Bad Request Content-Type: application/json {"error": "search_term is required"}`
 
-### Error Responses
-
-The API wrapper returns error responses for the following cases:
-
-*   Invalid query parameters: Returns a `400 Bad Request` response with an error message in the response body.
-*   Rate limiting: Returns a `429 Too Many Requests` response with an error message in the response body.
-*   Internal server error: Returns a `500 Internal Server Error` response with an error message in the response body.
-
 Rate Limiting
 -------------
 
@@ -81,8 +71,8 @@ Request Count Logging
 
 The API wrapper logs the number of requests received per hour. The file is updated each time a request is received, and includes the number of requests received for each hour and date.
 
-Authors
--------
+Author
+------
 
 *   [No-Clicks](https://github.com/no-clicks)
 
