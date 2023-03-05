@@ -7,7 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "chart.js": "^4.2.1",
     "express": "^4.17.1",
     "express-rate-limit": "^6.7.0",
     "node-fetch": "^2.6.1"
