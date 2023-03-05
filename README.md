@@ -1,7 +1,9 @@
 ChatGPT-Giphy-Connector
 =======================
 
-The ChatGPT-Giphy-Connector is an API wrapper that connects the GIPHY API to ChatGPT, allowing ChatGPT to send search requests to Giphy.
+The ChatGPT-Giphy-Connector is an API wrapper that connects the GIPHY API to ChatGPT, allowing ChatGPT to send search requests to Giphy and pass images back to ChatGPT.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P1J8F5K)
 
 Prompting in ChatGPT
 ------------
@@ -34,11 +36,12 @@ I will start by describing it vaguely, you'll go from there. If you understand, 
 A new round starts when I say !reset If I reset, you start with 3 tokens again.
 ```
 
-
 How it Works
 ------------
 
-This process involves using inline image linking to display images from external sources. To retrieve a specific image, a wrapper API is used to listen for unique API calls that include search terms as parameters in the URL. The wrapper API then makes an API call to Giphy API, parses the response to extract the appropriate image, and serves the image result back to the inline image using dynamic image serving. This process enables the display of specific images based on user requests, and can be used in various web applications that require image display capabilities.
+This process involves using inline image linking to display images from external sources. To retrieve a specific image, a wrapper API is used to listen for unique API calls that include search terms as parameters in the URL. 
+
+The wrapper API then makes a call to Giphy API, parses the response to extract the appropriate image, and serves the image result back to the inline image using dynamic image serving. This process enables the display of specific images based on user requests.
 
 API Documentation
 -----------------
