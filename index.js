@@ -2,7 +2,11 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fetch = require("node-fetch");
+const chartJs = require('chart.js');
+const chartScript = fs.readFileSync(__dirname + '/chart.js', 'utf8');
+
 const app = express();
+
 
 const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
 
@@ -107,8 +111,19 @@ app.get("/search", limiter, async (req, res) => {
 });
 
 // Redirect to GitHub on root route
-app.get("/", (req, res) => {
-  res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
+//app.get("/", (req, res) => {
+//  res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
+//});
+
+app.get('/', (req, res) => {
+  // Read the readme.md file
+  const readmeFile = fs.readFileSync(__dirname + '/README.md', 'utf8');
+
+  // Add the chart.js script to the readme.md file
+  const updatedReadmeFile = readmeFile.replace('</body>', `<script>${chartScript}</script></body>`);
+
+  // Send the updated readme.md file as the response
+  res.send(updatedReadmeFile);
 });
 
 // Handle 404 errors by redirecting to GitHub
