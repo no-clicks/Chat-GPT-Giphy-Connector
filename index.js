@@ -1,3 +1,4 @@
+const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fetch = require("node-fetch");
@@ -11,10 +12,39 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 
-// Apply the rate limiter middleware function to all routes
-app.use(limiter);
+// Middleware function to log request count
+const logRequestCount = (req, res, next) => {
+  const now = new Date();
+  const hour = now.getHours();
+  const date = now.toISOString().slice(0, 10); // Use ISO date format (YYYY-MM-DD)
 
-// Add middleware to log incoming requests to the console
+  // Read the current request count for this hour from the file
+  const filePath = `requests.log`;
+  let requestCounts = {};
+  if (fs.existsSync(filePath)) {
+    const fileData = fs.readFileSync(filePath, 'utf8');
+    if (fileData) {
+      requestCounts = JSON.parse(fileData);
+    }
+  }
+
+  // Increment the request count for this hour and date
+  if (!requestCounts[date]) {
+    requestCounts[date] = {};
+  }
+  if (!requestCounts[date][hour]) {
+    requestCounts[date][hour] = 0;
+  }
+  requestCounts[date][hour]++;
+
+  // Write the updated request counts to the file
+  fs.writeFileSync(filePath, JSON.stringify(requestCounts));
+
+  next();
+};
+
+// Apply middleware to log incoming requests to the console and track request count
+app.use(logRequestCount);
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
@@ -61,7 +91,8 @@ app.get("/search", limiter, async (req, res) => {
     // Make a request to the GIPHY API for the GIF URL
     const gifResponse = await fetch(gifUrl);
 
-    // Throw an error if the response from the GIPHY API for the GIF URL is not successful
+    // Throw an error if the response from the GIPHY API
+
     if (!gifResponse.ok) {
       throw new Error("Failed to fetch GIF from GIPHY");
     }
@@ -73,6 +104,16 @@ app.get("/search", limiter, async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+// Redirect to GitHub on root route
+app.get("/", (req, res) => {
+  res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
+});
+
+// Handle 404 errors by redirecting to GitHub
+app.use((req, res) => {
+  res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
 });
 
 // Start the server
