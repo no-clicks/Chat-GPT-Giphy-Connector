@@ -3,8 +3,6 @@ ChatGPT-Giphy-Connector
 
 The ChatGPT-Giphy-Connector is an API wrapper that connects the GIPHY API to ChatGPT, allowing ChatGPT to send search requests to Giphy and pass images back to ChatGPT.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P1J8F5K)
-
 Prompting in ChatGPT
 ------------
 
