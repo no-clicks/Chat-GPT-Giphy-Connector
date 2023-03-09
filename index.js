@@ -2,26 +2,25 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fetch = require("node-fetch");
+const validator = require("validator");
 
 const app = express();
 
 const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
 
-// Create a rate limiter middleware function that limits each IP address to 100 requests every 15 minutes
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
 
-// Middleware function to log request count
+// log request count middleware
 const logRequestCount = (req, res, next) => {
   const now = new Date();
   const hour = now.getHours();
-  const date = now.toISOString().slice(0, 10); // Use ISO date format (YYYY-MM-DD)
-
-  // Read the current request count for this hour from the file
+  const date = now.toISOString().slice(0, 10);
   const filePath = `requests.log`;
   let requestCounts = {};
+
   if (fs.existsSync(filePath)) {
     const fileData = fs.readFileSync(filePath, 'utf8');
     if (fileData) {
@@ -29,7 +28,6 @@ const logRequestCount = (req, res, next) => {
     }
   }
 
-  // Increment the request count for this hour and date
   if (!requestCounts[date]) {
     requestCounts[date] = {};
   }
@@ -38,20 +36,23 @@ const logRequestCount = (req, res, next) => {
   }
   requestCounts[date][hour]++;
 
-  // Write the updated request counts to the file
   fs.writeFileSync(filePath, JSON.stringify(requestCounts));
 
   next();
 };
 
-// Apply middleware to log incoming requests to the console and track request count
 app.use(logRequestCount);
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 
-// Define the /search endpoint
+// Set content security policy
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' https://media.giphy.com; script-src 'self'");
+  next();
+});
+
 app.get("/search", limiter, async (req, res) => {
   // Extract the search term from the request query parameters
   let searchTerm = req.query.search_term;
@@ -59,10 +60,11 @@ app.get("/search", limiter, async (req, res) => {
   // Remove the .gif extension from the search term, if present
   searchTerm = searchTerm.replace(/\.gif$/i, "");
 
+  // Sanitize the search term
+  searchTerm = validator.escape(searchTerm);
+
   // Replace spaces and commas with "+" characters, and remove any other characters that aren't letters, numbers, "+", or "-"
-  searchTerm = searchTerm
-    .replace(/[, ]+/g, "+")
-    .replace(/[^a-zA-Z0-9+\-]/g, "");
+  searchTerm = searchTerm.replace(/[, ]+/g, "+").replace(/[^a-zA-Z0-9+\-]/g, "");
 
   // Log the search term to the console
   console.log(`Search term: ${searchTerm}`);
@@ -74,7 +76,7 @@ app.get("/search", limiter, async (req, res) => {
   }
 
   // Construct the GIPHY API URL for the search term
-  const apiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${searchTerm}&limit=1`;
+  const apiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${searchTerm}&limit=1&sort=relevant`;
 
   try {
     // Make a request to the GIPHY API for the search term
@@ -89,16 +91,8 @@ app.get("/search", limiter, async (req, res) => {
     const json = await response.json();
     const gifUrl = json.data[0].images.original.url;
 
-    // Make a request to the GIPHY API for the GIF URL
+    // Make a request to the GIPHY API for the GIF and pipe the response to the client
     const gifResponse = await fetch(gifUrl);
-
-    // Throw an error if the response from the GIPHY API
-
-    if (!gifResponse.ok) {
-      throw new Error("Failed to fetch GIF from GIPHY");
-    }
-
-    // Pipe the response from the GIPHY API for the GIF URL to the response object for this endpoint
     gifResponse.body.pipe(res);
   } catch (error) {
     // Log any errors that occur and return a 500 error response to the user
@@ -110,7 +104,6 @@ app.get("/search", limiter, async (req, res) => {
 app.get("/requests", (req, res) => {
   const filePath = `requests.log`;
 
-  // Read the contents of the requests.log file and return it in the response
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
       console.error(err);
@@ -121,17 +114,14 @@ app.get("/requests", (req, res) => {
   });
 });
 
-// Redirect to GitHub on root route
 app.get("/", (req, res) => {
   res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
 });
 
-// Handle 404 errors by redirecting to GitHub
 app.use((req, res) => {
   res.redirect("https://github.com/no-clicks/Chat-GPT-Giphy-Connector");
 });
 
-// Start the server
 const listener = app.listen(process.env.PORT, () => {
   console.log(`Your app is listening on port ${listener.address().port}`);
 });
