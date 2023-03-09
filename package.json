@@ -9,7 +9,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "express-rate-limit": "^6.7.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "validator": "^13.9.0"
   },
   "engines": {
     "node": "14.x"
