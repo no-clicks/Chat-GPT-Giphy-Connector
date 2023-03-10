@@ -3,6 +3,7 @@ const rateLimit = require("express-rate-limit");
 const express = require("express");
 const fetch = require("node-fetch");
 const validator = require("validator");
+const { exec } = require("child_process");
 
 const app = express();
 
@@ -13,7 +14,6 @@ const limiter = rateLimit({
   max: 100,
 });
 
-// log request count middleware
 const logRequestCount = (req, res, next) => {
   const now = new Date();
   const hour = now.getHours();
@@ -37,6 +37,20 @@ const logRequestCount = (req, res, next) => {
   requestCounts[date][hour]++;
 
   fs.writeFileSync(filePath, JSON.stringify(requestCounts));
+
+  // Send information about the request to a Slack channel via CURL
+  const text = `GET ${req.originalUrl}`;
+  const channel = process.env.SLACK_CHANNEL;
+  const token = process.env.SLACK_BOT_TOKEN;
+  const command = `curl -d "text=${text}" -d "channel=${channel}" -H "Authorization: Bearer ${token}" -X POST https://slack.com/api/chat.postMessage`;
+
+  const { exec } = require("child_process");
+  exec(command, (error) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+  });
 
   next();
 };
